@@ -4,7 +4,11 @@ from rest_framework.permissions import IsAuthenticated
 from .models import Todo
 from .serializers import TodoSerializer
 
+from drf_spectacular.utils import extend_schema
 
+@extend_schema(
+    tags=['Todos']
+)
 class TodoViewSet(viewsets.ModelViewSet):
 
     serializer_class = TodoSerializer
