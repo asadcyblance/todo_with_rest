@@ -38,8 +38,11 @@ INSTALLED_APPS = [
     'django.contrib.sessions',
     'django.contrib.messages',
     'django.contrib.staticfiles',
-    'accounts',
+
     'rest_framework',
+    'drf_spectacular',
+
+    'accounts',
     'todo',
     'notifications',
 ]
@@ -146,10 +149,21 @@ REST_FRAMEWORK = {
     'DEFAULT_PERMISSION_CLASSES': (
         'rest_framework.permissions.IsAuthenticated',
     ),
+
+   'DEFAULT_SCHEMA_CLASS': (
+        'drf_spectacular.openapi.AutoSchema'
+    ),
 }
 
 # JWT
 SIMPLE_JWT = {
     'ACCESS_TOKEN_LIFETIME': timedelta(minutes=30),
     'REFRESH_TOKEN_LIFETIME': timedelta(days=1),
+}
+
+# Spectacular
+SPECTACULAR_SETTINGS = {
+    'TITLE': 'Todo Management API',
+    'DESCRIPTION': 'Todo CRUD, Notifications, JWT Authentication',
+    'VERSION': '1.0.0',
 }
