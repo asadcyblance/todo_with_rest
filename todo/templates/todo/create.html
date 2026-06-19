@@ -1,0 +1,125 @@
+{% extends 'base.html' %}
+
+{% block title %}
+Create Todo
+{% endblock %}
+
+{% block content %}
+
+<div class="card">
+
+    <div class="card-header">
+        <h3>Create Todo</h3>
+    </div>
+
+    <div class="card-body">
+
+        <form method="post" id="todoForm" novalidate>
+
+            {% csrf_token %}
+
+            <div class="row">
+
+                {% if is_superuser %}
+                <div class="col-md-6 mb-3">
+                    <label class="form-label">Assign To *</label>
+                    {{ form.assign_to }}
+                    <div class="text-danger">
+                        {{ form.assign_to.errors }}
+                    </div>
+                </div>
+                {% endif %}
+
+                <div class="col-md-12 mb-3">
+                    <label class="form-label">Title *</label>
+                    {{ form.title }}
+                    <div class="text-danger">
+                        {{ form.title.errors }}
+                    </div>
+                </div>
+
+                <div class="col-md-12 mb-3">
+                    <label class="form-label">Description *</label>
+                    {{ form.description }}
+                    <div class="text-danger">
+                        {{ form.description.errors }}
+                    </div>
+                </div>
+
+                <div class="col-md-6 mb-3">
+                    <label class="form-label">Status *</label>
+                    {{ form.status }}
+                    <div class="text-danger">
+                        {{ form.status.errors }}
+                    </div>
+                </div>
+
+            </div>
+
+            {% if form.non_field_errors %}
+                <div class="alert alert-danger">
+                    {{ form.non_field_errors }}
+                </div>
+            {% endif %}
+            <div id="formErrors" class="alert alert-danger d-none"></div>
+
+            <button type="submit" class="btn btn-success">
+                Save Todo
+            </button>
+
+            <a href="{% url 'todo_list' %}" class="btn btn-secondary">
+                Cancel
+            </a>
+
+        </form>
+
+    </div>
+
+</div>
+
+{% endblock %}
+
+{% block js %}
+{% load static %}
+<script src="{% static 'js/todo-formvalidation.js' %}"></script>
+<script>
+    function clearTodoErrors() {
+        $("#formErrors").addClass("d-none").html("");
+        $("#todoForm div.text-danger").html("");
+        $("#todoForm .is-invalid").removeClass("is-invalid");
+    }
+
+    $(document).ready(function() {
+        $("#todoForm").on("submit", function(e) {
+            e.preventDefault();
+
+            if (!$("#todoForm").valid()) {
+                return false;
+            }
+
+            clearTodoErrors();
+
+            $.ajax({
+                url: "{% url 'todo_ajax_create' %}",
+                type: "POST",
+                data: $(this).serialize(),
+                success: function(response) {
+                    if (response.status == "success") {
+                        window.location.href = "{% url 'todo_list' %}?success=created";
+                    } else {
+                        $.each(response.errors || {}, function(field, messages) {
+                            if (field === "__all__") {
+                                $("#formErrors").removeClass("d-none").html(messages.join("<br>"));
+                                return;
+                            }
+                            var input = $("#todoForm [name='" + field + "']");
+                            var wrapper = input.closest(".mb-3");
+                            wrapper.find(".text-danger").first().html(messages.join("<br>"));
+                        });
+                    }
+                }
+            });
+        });
+    });
+</script>
+{% endblock %}
