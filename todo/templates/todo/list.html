@@ -1,316 +1,321 @@
 {% extends 'base.html' %}
 
+
+
 {% block title %}
+
 {% if is_superuser %}All Todos{% else %}My Todos{% endif %}
+
 {% endblock %}
+
+
 
 {% block content %}
 
+
+
 <div class="d-flex justify-content-between mb-3">
+
+
 
     <h2>{% if is_superuser %}All Todos{% else %}My Todos{% endif %}</h2>
 
+
+
     <a href="{% url 'todo_create' %}" class="btn btn-primary">
+
         Add Todo
+
     </a>
 
+
+
 </div>
+
+
 
 <div id="successMessage" class="alert alert-success alert-dismissible fade show d-none" role="alert">
+
     <span class="message-text"></span>
+
     <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
+
 </div>
 
+
+
 {% if request.GET.success == 'created' %}
+
     <div class="alert alert-success alert-dismissible fade show" role="alert">
+
         Todo created successfully.
+
         <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
+
     </div>
+
 {% elif request.GET.success == 'updated' %}
+
     <div class="alert alert-success alert-dismissible fade show" role="alert">
+
         Todo updated successfully.
+
         <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
+
     </div>
+
 {% endif %}
+
+
+
+<div class="row g-3 mb-3">
+
+    <div class="col-md-3">
+
+        <label class="form-label" for="searchFilter">Search</label>
+
+        <input type="text" id="searchFilter" class="form-control" placeholder="Search title or description...">
+
+    </div>
+
+    <div class="col-md-2">
+
+        <label class="form-label" for="statusFilter">Status</label>
+
+        <select id="statusFilter" class="form-select">
+
+            <option value="">All Status</option>
+
+            <option value="pending">Pending</option>
+
+            <option value="completed">Completed</option>
+
+        </select>
+
+    </div>
+
+    <div class="col-md-2">
+
+        <label class="form-label" for="startDateFilter">Start Date</label>
+
+        <input type="date" id="startDateFilter" class="form-control">
+
+    </div>
+
+    <div class="col-md-2">
+
+        <label class="form-label" for="endDateFilter">End Date</label>
+
+        <input type="date" id="endDateFilter" class="form-control">
+
+    </div>
+
+    <div class="col-md-2 d-flex align-items-end">
+
+        <button type="button" id="clearFiltersBtn" class="btn btn-outline-secondary w-100">
+
+            Clear Filters
+
+        </button>
+
+    </div>
+
+</div>
+
+
 
 <table id="todosTable" class="table table-bordered table-striped align-middle">
 
+
+
     <thead>
+
         <tr>
+
             <th>ID</th>
+
             {% if is_superuser %}
-            <th>Created By</th>
+
+            <th>Username</th>
+
             {% endif %}
+
             <th>Title</th>
+
             <th>Description</th>
+
             <th>Status</th>
-            <th>Created</th>
+
+            <th>Created At</th>
+
             <th>Actions</th>
+
         </tr>
+
     </thead>
 
-    <tbody>
 
-    {% for todo in todos %}
 
-        <tr>
-            <td>{{ todo.id }}</td>
-            {% if is_superuser %}
-            <td>{{ todo.created_by.username }}</td>
-            {% endif %}
-            <td>{{ todo.title }}</td>
-            <td>{{ todo.description|truncatechars:50 }}</td>
-            <td>
-                <select class="form-select form-select-sm status-select" data-id="{{ todo.id }}">
-                    <option value="pending" {% if todo.status == 'pending' %}selected{% endif %}>Pending</option>
-                    <option value="completed" {% if todo.status == 'completed' %}selected{% endif %}>Completed</option>
-                </select>
-            </td>
-            <td>{{ todo.created_at|date:"M d, Y" }}</td>
-            <td>
-                <a href="{% url 'todo_detail' todo.id %}"
-                   class="btn btn-info btn-sm"
-                   title="View"
-                   aria-label="View">
-                    <i class="bi bi-eye"></i>
-                </a>
-
-                <button type="button"
-                   class="btn btn-warning btn-sm edit-btn"
-                   data-id="{{ todo.id }}"
-                   title="Edit"
-                   aria-label="Edit">
-                    <i class="bi bi-pencil"></i>
-                </button>
-
-                <button type="button"
-                   class="btn btn-danger btn-sm delete-btn"
-                   data-id="{{ todo.id }}"
-                   title="Delete"
-                   aria-label="Delete">
-                    <i class="bi bi-trash"></i>
-                </button>
-            </td>
-        </tr>
-
-    {% endfor %}
+    <tbody id="todosTableBody">
 
     </tbody>
 
+
+
 </table>
 
-<div class="modal fade" id="editTodoModal" tabindex="-1" aria-hidden="true">
-    <div class="modal-dialog">
-        <div class="modal-content">
-            <div class="modal-header">
-                <h5 class="modal-title">Edit Todo</h5>
-                <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
-            </div>
-            <div class="modal-body">
-                <div id="editTodoErrors" class="alert alert-danger d-none"></div>
-                <form id="editTodoForm" novalidate>
-                    {% csrf_token %}
-                    <input type="hidden" id="editTodoId">
-                    {% if is_superuser %}
-                    <div class="mb-3">
-                        <label class="form-label" for="editTodoAssignTo">Assign To *</label>
-                        <select class="form-select" id="editTodoAssignTo" name="assign_to">
-                            {% for user in users %}
-                                <option value="{{ user.id }}">{{ user.username }}</option>
-                            {% endfor %}
-                        </select>
-                        <div class="text-danger"></div>
-                    </div>
-                    {% endif %}
-                    <div class="mb-3">
-                        <label class="form-label">Title *</label>
-                        <input type="text" class="form-control" id="editTodoTitle" name="title">
-                        <div class="text-danger"></div>
-                    </div>
-                    <div class="mb-3">
-                        <label class="form-label">Description *</label>
-                        <textarea class="form-control" id="editTodoDescription" name="description" rows="4"></textarea>
-                        <div class="text-danger"></div>
-                    </div>
-                    <div class="mb-3">
-                        <label class="form-label">Status *</label>
-                        <select class="form-select" id="editTodoStatus" name="status">
-                            <option value="pending">Pending</option>
-                            <option value="completed">Completed</option>
-                        </select>
-                        <div class="text-danger"></div>
-                    </div>
-                    <button type="submit" class="btn btn-primary">Update</button>
-                </form>
-            </div>
-        </div>
+
+
+<div id="todoListLoader" class="text-center py-3 d-none">
+
+    <div class="spinner-border spinner-border-sm text-primary" role="status">
+
+        <span class="visually-hidden">Loading...</span>
+
     </div>
+
+    <span class="ms-2 text-muted">Loading todos...</span>
+
 </div>
 
+
+
+<div id="todoListEnd" class="text-center py-3 text-muted d-none">
+
+    No more todos to load.
+
+</div>
+
+
+
+<div class="modal fade" id="editTodoModal" tabindex="-1" aria-hidden="true">
+
+    <div class="modal-dialog">
+
+        <div class="modal-content">
+
+            <div class="modal-header">
+
+                <h5 class="modal-title">Edit Todo</h5>
+
+                <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+
+            </div>
+
+            <div class="modal-body">
+
+                <div id="editTodoErrors" class="alert alert-danger d-none"></div>
+
+                <form id="editTodoForm" novalidate>
+
+                    {% csrf_token %}
+
+                    <input type="hidden" id="editTodoId">
+
+                    {% if is_superuser %}
+
+                    <div class="mb-3">
+
+                        <label class="form-label" for="editTodoAssignTo">Assign To *</label>
+
+                        <select class="form-select" id="editTodoAssignTo" name="assign_to">
+
+                            {% for user in users %}
+
+                                <option value="{{ user.id }}">{{ user.username }}</option>
+
+                            {% endfor %}
+
+                        </select>
+
+                        <div class="text-danger"></div>
+
+                    </div>
+
+                    {% endif %}
+
+                    <div class="mb-3">
+
+                        <label class="form-label">Title *</label>
+
+                        <input type="text" class="form-control" id="editTodoTitle" name="title">
+
+                        <div class="text-danger"></div>
+
+                    </div>
+
+                    <div class="mb-3">
+
+                        <label class="form-label">Description *</label>
+
+                        <textarea class="form-control" id="editTodoDescription" name="description" rows="4"></textarea>
+
+                        <div class="text-danger"></div>
+
+                    </div>
+
+                    <div class="mb-3">
+
+                        <label class="form-label">Status *</label>
+
+                        <select class="form-select" id="editTodoStatus" name="status">
+
+                            <option value="pending">Pending</option>
+
+                            <option value="completed">Completed</option>
+
+                        </select>
+
+                        <div class="text-danger"></div>
+
+                    </div>
+
+                    <button type="submit" class="btn btn-primary">Update</button>
+
+                </form>
+
+            </div>
+
+        </div>
+
+    </div>
+
+</div>
+
+
+
 {% endblock %}
+
+
 
 {% block js %}
+
 {% load static %}
+
 <script src="{% static 'js/todo-formvalidation.js' %}"></script>
+
 <script src="{% static 'js/sweetalert.js' %}"></script>
+
 <script>
-    var todoDetailUrlTemplate = "{% url 'todo_ajax_detail' 0 %}";
-    var todoUpdateUrlTemplate = "{% url 'todo_ajax_update' 0 %}";
-    var todoDeleteUrlTemplate = "{% url 'todo_ajax_delete' 0 %}";
-    var todoStatusUrlTemplate = "{% url 'todo_ajax_status' 0 %}";
-
-    function buildTodoUrl(template, todoId) {
-        return template.replace('/0/', '/' + todoId + '/');
-    }
-
-    var todosTable = $("#todosTable").DataTable({
-        pageLength: 10,
-        order: [[0, "desc"]]
-    });
-
-    var todoModal = new bootstrap.Modal(document.getElementById("editTodoModal"));
-
-    function clearEditTodoErrors() {
-        $("#editTodoErrors").addClass("d-none").html("");
-        $("#editTodoForm div.text-danger").html("");
-        $("#editTodoForm .is-invalid").removeClass("is-invalid");
-    }
-
-    $("#todosTable").on("click", ".edit-btn", function() {
-        var todo_id = $(this).data("id");
-        clearEditTodoErrors();
-
-        var editValidator = $("#editTodoForm").data("validator");
-        if (editValidator) {
-            editValidator.resetForm();
+    window.todoConfig = {
+        isSuperUser: "{{ is_superuser|yesno:'true,false' }}" === "true",
+    
+        csrfToken: "{{ csrf_token }}",
+    
+        listUrl: "{% url 'todo_list' %}",
+    
+        urls: {
+            list: "{{ todo_ajax_list_url }}",
+            detail: "{% url 'todo_ajax_detail' 0 %}",
+            update: "{% url 'todo_ajax_update' 0 %}",
+            delete: "{% url 'todo_ajax_delete' 0 %}",
+            status: "{% url 'todo_ajax_status' 0 %}"
         }
-
-        $.get(buildTodoUrl(todoDetailUrlTemplate, todo_id), function(response) {
-            if (response.status === "success") {
-                $("#editTodoId").val(response.id);
-                $("#editTodoTitle").val(response.title);
-                $("#editTodoDescription").val(response.description);
-                $("#editTodoStatus").val(response.todo_status);
-                {% if is_superuser %}
-                $("#editTodoAssignTo").val(response.assign_to);
-                {% endif %}
-                todoModal.show();
-            }
-        }).fail(function() {
-            alert("Could not load todo details.");
-        });
-    });
-
-    $("#editTodoForm").on("submit", function(e) {
-        e.preventDefault();
-
-        if (!$(this).valid()) {
-            return false;
-        }
-
-        clearEditTodoErrors();
-
-        var todo_id = $("#editTodoId").val();
-
-        $.ajax({
-            url: buildTodoUrl(todoUpdateUrlTemplate, todo_id),
-            type: "POST",
-            data: $(this).serialize(),
-            success: function(response) {
-                if (response.status === "success") {
-                    window.location.href = "{% url 'todo_list' %}?success=updated";
-                } else {
-                    $.each(response.errors || {}, function(field, messages) {
-                        if (field === "__all__") {
-                            $("#editTodoErrors").removeClass("d-none").html(messages.join("<br>"));
-                            return;
-                        }
-                        var input = $("#editTodoForm [name='" + field + "']");
-                        input.closest(".mb-3").find("div.text-danger").html(messages.join("<br>"));
-                    });
-                }
-            }
-        });
-    });
-
-    $("#todosTable").on("click", ".delete-btn", function() {
-        var todo_id = $(this).data('id');
-        var row = $(this).closest('tr');
-
-        Swal.fire({
-            title: 'Are you sure?',
-            text: 'You want to delete this todo?',
-            icon: 'warning',
-            showCancelButton: true,
-            confirmButtonColor: '#dc3545',
-            cancelButtonColor: '#6c757d',
-            confirmButtonText: 'Yes, Delete'
-        }).then((result) => {
-            if (result.isConfirmed) {
-                $.ajax({
-                    url: buildTodoUrl(todoDeleteUrlTemplate, todo_id),
-                    type: "POST",
-                    data: {
-                        csrfmiddlewaretoken: "{{ csrf_token }}"
-                    },
-                    success: function(response) {
-                        if (response.status == "success") {
-                            todosTable.row(row).remove().draw(false);
-
-                            Swal.fire({
-                                title: 'Deleted!',
-                                text: 'Todo deleted successfully.',
-                                icon: 'success',
-                                timer: 2000,
-                                showConfirmButton: false
-                            });
-                        } else {
-                            Swal.fire({
-                                title: 'Error!',
-                                text: 'Unable to delete todo.',
-                                icon: 'error'
-                            });
-                        }
-                    },
-                    error: function() {
-                        Swal.fire({
-                            title: 'Error!',
-                            text: 'Something went wrong.',
-                            icon: 'error'
-                        });
-                    }
-                });
-            }
-        });
-    });
-
-    $("#todosTable").on("change", ".status-select", function() {
-        var select = $(this);
-        var todo_id = select.data("id");
-        var selected_status = select.val();
-        var previous_status = selected_status === "pending" ? "completed" : "pending";
-
-        $.ajax({
-            url: buildTodoUrl(todoStatusUrlTemplate, todo_id),
-            type: "POST",
-            data: {
-                status: selected_status,
-                csrfmiddlewaretoken: "{{ csrf_token }}"
-            },
-            success: function(response) {
-                if (response.status === "success") {
-                    $("#successMessage").removeClass("d-none");
-                    $("#successMessage .message-text").text("Todo status updated successfully.");
-                } else {
-                    select.val(previous_status);
-                    alert(response.message || "Could not update status.");
-                }
-            },
-            error: function() {
-                select.val(previous_status);
-                alert("Could not update status.");
-            }
-        });
-    });
+    };
 </script>
+
+<script src="{% static 'js/todo-list.js' %}"></script>
+
 {% endblock %}
+
+

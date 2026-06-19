@@ -1,9 +1,16 @@
+from datetime import datetime
+
 from django.contrib.auth.decorators import login_required
+from django.db.models import Q
 from django.http import JsonResponse
 from django.shortcuts import get_object_or_404, render
+from django.template.loader import render_to_string
+from django.urls import reverse
 
 from .forms import AdminTodoForm, TodoForm, get_assignable_users
 from .models import Todo
+
+TODO_LIST_PAGE_SIZE = 10
 
 
 def _accessible_todos(request):
@@ -32,17 +39,79 @@ def _save_todo(todo, request):
     todo.save()
 
 
+def _filter_todos_queryset(request, queryset):
+    search = request.GET.get('search', '').strip()
+    status = request.GET.get('status', '').strip()
+    start_date = request.GET.get('start_date', '').strip()
+    end_date = request.GET.get('end_date', '').strip()
+
+    if search:
+        queryset = queryset.filter(
+            Q(title__icontains=search) | Q(description__icontains=search)
+        )
+
+    if status in ('pending', 'completed'):
+        queryset = queryset.filter(status=status)
+
+    if start_date:
+        try:
+            parsed_start = datetime.strptime(start_date, '%Y-%m-%d').date()
+            queryset = queryset.filter(created_at__date__gte=parsed_start)
+        except ValueError:
+            pass
+
+    if end_date:
+        try:
+            parsed_end = datetime.strptime(end_date, '%Y-%m-%d').date()
+            queryset = queryset.filter(created_at__date__lte=parsed_end)
+        except ValueError:
+            pass
+
+    return queryset
+
+
 @login_required
 def todo_list(request):
     context = {
-        'todos': _accessible_todos(request),
         'is_superuser': request.user.is_superuser,
+        'todo_ajax_list_url': reverse('todo_ajax_list'),
     }
 
     if request.user.is_superuser:
         context['users'] = get_assignable_users()
 
     return render(request, 'todo/list.html', context)
+
+
+@login_required
+def todo_ajax_list(request):
+    queryset = _accessible_todos(request).order_by('id')
+    queryset = _filter_todos_queryset(request, queryset)
+
+    try:
+        offset = max(int(request.GET.get('offset', 0)), 0)
+    except ValueError:
+        offset = 0
+
+    todos = list(queryset[offset:offset + TODO_LIST_PAGE_SIZE + 1])
+    has_more = len(todos) > TODO_LIST_PAGE_SIZE
+    todos = todos[:TODO_LIST_PAGE_SIZE]
+
+    html = render_to_string(
+        'todo/_todo_rows.html',
+        {
+            'todos': todos,
+            'is_superuser': request.user.is_superuser,
+        },
+        request=request,
+    )
+
+    return JsonResponse({
+        'status': 'success',
+        'html': html,
+        'has_more': has_more,
+        'offset': offset + len(todos),
+    })
 
 
 @login_required
@@ -131,6 +200,7 @@ def todo_ajax_update(request, pk):
 def todo_ajax_delete(request, pk):
     if request.method == 'POST':
         todo = _get_accessible_todo(request, pk)
+        todo._actor_username = request.user.username
         todo.delete()
         return JsonResponse({'status': 'success'})
 

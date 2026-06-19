@@ -1,0 +1,47 @@
+{% for todo in todos %}
+<tr>
+    <td>{{ todo.id }}</td>
+    {% if is_superuser %}
+    <td>{{ todo.created_by.username }}</td>
+    {% endif %}
+    <td>{{ todo.title }}</td>
+    <td>{{ todo.description|truncatechars:50 }}</td>
+    <td>
+        <select class="form-select form-select-sm status-select" data-id="{{ todo.id }}">
+            <option value="pending" {% if todo.status == 'pending' %}selected{% endif %}>Pending</option>
+            <option value="completed" {% if todo.status == 'completed' %}selected{% endif %}>Completed</option>
+        </select>
+    </td>
+    <td>{{ todo.created_at|date:"M d, Y" }}</td>
+    <td>
+        <a href="{% url 'todo_detail' todo.id %}"
+           class="btn btn-info btn-sm"
+           title="View"
+           aria-label="View">
+            <i class="bi bi-eye"></i>
+        </a>
+
+        <button type="button"
+           class="btn btn-warning btn-sm edit-btn"
+           data-id="{{ todo.id }}"
+           title="Edit"
+           aria-label="Edit">
+            <i class="bi bi-pencil"></i>
+        </button>
+
+        <button type="button"
+           class="btn btn-danger btn-sm delete-btn"
+           data-id="{{ todo.id }}"
+           title="Delete"
+           aria-label="Delete">
+            <i class="bi bi-trash"></i>
+        </button>
+    </td>
+</tr>
+{% empty %}
+<tr class="todo-empty-row">
+    <td colspan="{% if is_superuser %}7{% else %}6{% endif %}" class="text-center text-muted py-4">
+        No todos found.
+    </td>
+</tr>
+{% endfor %}

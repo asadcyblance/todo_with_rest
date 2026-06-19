@@ -6,6 +6,7 @@ urlpatterns = [
     path('', web_views.todo_list, name='todo_list'),
     path('create/', web_views.todo_create, name='todo_create'),
     path('ajax/create/', web_views.todo_ajax_create, name='todo_ajax_create'),
+    path('ajax/list/', web_views.todo_ajax_list, name='todo_ajax_list'),
     path('ajax/detail/<int:pk>/', web_views.todo_ajax_detail, name='todo_ajax_detail'),
     path('ajax/update/<int:pk>/', web_views.todo_ajax_update, name='todo_ajax_update'),
     path('ajax/delete/<int:pk>/', web_views.todo_ajax_delete, name='todo_ajax_delete'),

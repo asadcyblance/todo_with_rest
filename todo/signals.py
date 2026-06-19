@@ -1,4 +1,4 @@
-from django.db.models.signals import post_save, pre_save
+from django.db.models.signals import post_save, pre_save, post_delete
 from django.dispatch import receiver
 from django.contrib.auth.models import User
 
@@ -80,5 +80,25 @@ def create_notification(sender, instance, created, **kwargs):
             message = (
                 f'{actor} updated task "{instance.title}"'
             )
+
+    _notify_superusers(message)
+
+
+@receiver(post_delete, sender=Todo)
+def notify_todo_deleted(sender, instance, **kwargs):
+    actor = getattr(instance, '_actor_username', instance.created_by.username)
+
+    actor_user = User.objects.filter(username=actor).first()
+    is_superuser = actor_user and actor_user.is_superuser
+
+    if is_superuser:
+        message = (
+            f'Super Admin deleted task "{instance.title}" '
+            f'for {instance.created_by.username}'
+        )
+    else:
+        message = (
+            f'{actor} deleted task "{instance.title}"'
+        )
 
     _notify_superusers(message)
