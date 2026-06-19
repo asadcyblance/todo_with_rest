@@ -1,0 +1,64 @@
+{% extends 'base.html' %}
+
+{% block title %}
+Todo Details
+{% endblock %}
+
+{% block content %}
+
+<div class="card">
+
+    <div class="card-header d-flex justify-content-between align-items-center">
+        <h3 class="mb-0">Todo Details</h3>
+        <a href="{% url 'todo_list' %}" class="btn btn-secondary btn-sm">Back to List</a>
+    </div>
+
+    <div class="card-body">
+
+        <table class="table table-bordered">
+
+            <tr>
+                <th>Title</th>
+                <td>{{ todo.title }}</td>
+            </tr>
+
+            <tr>
+                <th>Description</th>
+                <td>{{ todo.description }}</td>
+            </tr>
+
+            <tr>
+                <th>Status</th>
+                <td>
+                    {% if todo.status == 'completed' %}
+                        <span class="badge bg-success">Completed</span>
+                    {% else %}
+                        <span class="badge bg-warning text-dark">Pending</span>
+                    {% endif %}
+                </td>
+            </tr>
+
+            {% if is_superuser %}
+            <tr>
+                <th>Created By</th>
+                <td>{{ todo.created_by.username }}</td>
+            </tr>
+            {% endif %}
+
+            <tr>
+                <th>Created At</th>
+                <td>{{ todo.created_at|date:"M d, Y H:i" }}</td>
+            </tr>
+
+            <tr>
+                <th>Updated At</th>
+                <td>{{ todo.updated_at|date:"M d, Y H:i" }}</td>
+            </tr>
+
+        </table>
+
+    </div>
+
+</div>
+
+{% endblock %}

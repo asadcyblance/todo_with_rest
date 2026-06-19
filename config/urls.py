@@ -15,8 +15,14 @@ Including another URLconf
     2. Add a URL to urlpatterns:  path('blog/', include('blog.urls'))
 """
 from django.contrib import admin
+from django.contrib.auth import views as auth_views
 from django.urls import path, include
 
+from accounts.views import (
+    CustomLoginView,
+    CustomLogoutView,
+    CustomPasswordResetView,
+)
 from rest_framework_simplejwt.views import (
     TokenObtainPairView,
     TokenRefreshView,
@@ -29,7 +35,34 @@ from drf_spectacular.views import (
 )
 
 urlpatterns = [
+    path('login/', CustomLoginView.as_view(), name='login'),
+    path('logout/', CustomLogoutView.as_view(), name='logout'),
+    path('password-reset/', CustomPasswordResetView.as_view(), name='password_reset'),
+    path(
+        'password-reset/done/',
+        auth_views.PasswordResetDoneView.as_view(
+            template_name='accounts/password_reset_done.html',
+        ),
+        name='password_reset_done',
+    ),
+    path(
+        'reset/<uidb64>/<token>/',
+        auth_views.PasswordResetConfirmView.as_view(
+            template_name='accounts/password_reset_confirm.html',
+        ),
+        name='password_reset_confirm',
+    ),
+    path(
+        'reset/done/',
+        auth_views.PasswordResetCompleteView.as_view(
+            template_name='accounts/password_reset_complete.html',
+        ),
+        name='password_reset_complete',
+    ),
     path('admin/', admin.site.urls),
+    path('', include('dashboard.urls')),
+    path('todos/', include('todo.web_urls')),
+    path('notifications/', include('notifications.web_urls')),
     path('api/', include('todo.urls')),
     path('api-auth/',include('rest_framework.urls')),
     path('api/token/',TokenObtainPairView.as_view(),name='token_obtain_pair'),

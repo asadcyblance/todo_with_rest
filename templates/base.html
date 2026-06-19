@@ -1,0 +1,229 @@
+<!DOCTYPE html>
+
+<html lang="en">
+
+<head>
+
+    <meta charset="UTF-8">
+
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+
+    <title>{% block title %}Todo Management{% endblock %}</title>
+
+
+
+    {% load static %}
+
+    <link rel="stylesheet" href="{% static 'css/bootstrap.min.css' %}">
+
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.3/font/bootstrap-icons.min.css">
+
+    <link rel="stylesheet" href="{% static 'css/dataTables.bootstrap5.min.css' %}">
+
+    <link rel="stylesheet" href="{% static 'css/style.css' %}">
+
+    {% block extra_css %}{% endblock %}
+
+</head>
+
+<body>
+
+
+
+{% if user.is_authenticated and user.is_superuser %}
+
+<div id="notificationWsConfig"
+
+     data-ws-url="/ws/notifications/"
+
+     data-csrf-token="{{ csrf_token }}"
+
+     data-on-page="{% if '/notifications/' in request.path %}true{% else %}false{% endif %}"
+
+     class="d-none"></div>
+
+{% endif %}
+
+
+
+<div class="container-fluid">
+
+    <div class="row">
+
+
+
+        <div class="col-md-2 sidebar">
+
+
+
+            <h4 class="text-white p-3">
+
+                Todo
+
+            </h4>
+
+
+
+            {% if user.is_authenticated %}
+
+                <div class="text-white px-3 pb-2 d-flex align-items-center gap-2">
+
+                    <div class="sidebar-profile-avatar sidebar-profile-avatar-placeholder">
+
+                        <i class="bi bi-person-fill"></i>
+
+                    </div>
+
+                    <div>
+
+                        <small>Hello, {{ user.username }}</small>
+
+                        {% if user.is_superuser %}
+
+                            <br><small class="text-warning">Superuser</small>
+
+                        {% endif %}
+
+                    </div>
+
+                </div>
+
+
+
+                <a href="{% url 'dashboard' %}" class="{% if request.path == '/' %}active{% endif %}">
+
+                    <i class="bi bi-speedometer2"></i> Dashboard
+
+                </a>
+
+
+
+                <a href="{% url 'todo_list' %}" class="{% if '/todos/' in request.path %}active{% endif %}">
+
+                    <i class="bi bi-list-check"></i>
+
+                    {% if user.is_superuser %}All Todos{% else %}My Todos{% endif %}
+
+                </a>
+
+
+
+                {% if user.is_superuser %}
+
+                <a href="{% url 'notification_list' %}"
+
+                   id="sidebarNotificationLink"
+
+                   class="{% if '/notifications/' in request.path %}active{% endif %}">
+
+                    <i class="bi bi-bell"></i> Notifications
+
+                    {% if unread_notification_count %}
+
+                        <span class="sidebar-badge bg-danger" id="sidebarNotificationBadge">
+
+                            {{ unread_notification_count }}
+
+                        </span>
+
+                    {% endif %}
+
+                </a>
+
+
+
+                <a href="{% url 'admin:index' %}" target="_blank">
+
+                    <i class="bi bi-shield-lock"></i> Django Admin
+
+                </a>
+
+                {% endif %}
+
+
+
+                <form method="post" action="{% url 'logout' %}" class="m-0">
+
+                    {% csrf_token %}
+
+                    <button type="submit" class="sidebar-logout-btn">
+
+                        <i class="bi bi-box-arrow-right"></i> Logout
+
+                    </button>
+
+                </form>
+
+            {% endif %}
+
+
+
+        </div>
+
+
+
+        <div class="col-md-10 p-4">
+
+
+
+            {% if messages %}
+
+                {% for message in messages %}
+
+                    <div class="alert alert-success alert-dismissible fade show" role="alert">
+
+                        {{ message }}
+
+                        <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
+
+                    </div>
+
+                {% endfor %}
+
+            {% endif %}
+
+
+
+            {% block content %}
+
+            {% endblock %}
+
+
+
+        </div>
+
+
+
+    </div>
+
+</div>
+
+<script src="{% static 'js/jquery.min.js' %}"></script>
+
+<script src="{% static 'js/bootstrap.bundle.min.js' %}"></script>
+
+<script src="{% static 'js/jquery.dataTables.min.js' %}"></script>
+
+<script src="{% static 'js/dataTables.bootstrap5.min.js' %}"></script>
+
+<script src="{% static 'js/jquery.validate.min.js' %}"></script>
+
+{% if user.is_authenticated and user.is_superuser %}
+
+<script src="{% static 'js/notifications-ws.js' %}?v=2"></script>
+
+{% endif %}
+
+
+
+{% block js %}
+
+{% endblock %}
+
+
+
+</body>
+
+</html>
+
+

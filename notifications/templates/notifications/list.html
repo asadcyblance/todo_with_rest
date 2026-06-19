@@ -1,0 +1,80 @@
+{% extends 'base.html' %}
+
+{% block title %}
+Notifications
+{% endblock %}
+
+{% block content %}
+
+<div class="d-flex justify-content-between align-items-center mb-3">
+    <div>
+        <h2 class="mb-1">Notifications</h2>
+        <p class="text-muted mb-0">
+            Total: <span id="totalCountLabel">{{ total_count }}</span> |
+            Unread: <span id="unreadCountLabel">{{ unread_count }}</span>
+        </p>
+    </div>
+
+    <div class="notification-header-actions">
+        {% if unread_count %}
+        <form method="post" action="{% url 'notification_mark_all_read' %}" id="markAllReadForm">
+            {% csrf_token %}
+            <button type="submit" class="btn btn-primary btn-sm">
+                Mark All as Read
+            </button>
+        </form>
+        {% endif %}
+    </div>
+</div>
+
+<div class="card shadow border-0">
+    <div class="card-body p-0">
+
+        {% if notifications %}
+        <div class="list-group list-group-flush" id="notificationList">
+            {% for notification in notifications %}
+            <div class="list-group-item {% if not notification.is_read %}notification-unread{% endif %}"
+                 id="notification-{{ notification.id }}">
+                <div class="d-flex justify-content-between align-items-start gap-3">
+                    <div>
+                        {% if not notification.is_read %}
+                            <span class="badge bg-danger mb-2">New</span>
+                        {% else %}
+                            <span class="badge bg-secondary mb-2">Read</span>
+                        {% endif %}
+                        <p class="mb-1">{{ notification.message }}</p>
+                        <small class="text-muted">
+                            {{ notification.created_at|date:"M d, Y H:i" }}
+                        </small>
+                    </div>
+
+                    {% if not notification.is_read %}
+                    <form method="post"
+                          action="{% url 'notification_mark_read' notification.id %}"
+                          class="mark-read-form">
+                        {% csrf_token %}
+                        <button type="submit" class="btn btn-outline-primary btn-sm">
+                            Mark as Read
+                        </button>
+                    </form>
+                    {% endif %}
+                </div>
+            </div>
+            {% endfor %}
+        </div>
+        {% else %}
+        <div class="p-4 text-center text-muted" id="notificationEmptyState">
+            No notifications yet.
+        </div>
+        <div class="list-group list-group-flush d-none" id="notificationList"></div>
+        {% endif %}
+
+    </div>
+</div>
+
+{% endblock %}
+
+{% block js %}
+{% load static %}
+<script src="{% static 'js/notifications.js' %}"></script>
+{% endblock %}

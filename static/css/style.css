@@ -1,0 +1,184 @@
+/* body{
+    background:#f8f9fa;
+} */
+
+body {
+    background:#f8f9fa;
+    min-height: 100vh;
+    font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+}
+
+.dropzone{
+    border:2px dashed #ced4da;
+    border-radius:8px;
+    min-height:120px;
+}
+
+.sidebar{
+    min-height:100vh;
+    background:#212529;
+}
+
+.sidebar a{
+    color:white;
+    text-decoration:none;
+    display:block;
+    padding:10px;
+}
+
+.sidebar a:hover{
+    background:#343a40;
+}
+
+.sidebar a.active{
+    background:#0d6efd;
+    font-weight:600;
+}
+
+.sidebar-logout-btn{
+    color:white;
+    background:none;
+    border:none;
+    width:100%;
+    text-align:left;
+    padding:10px;
+}
+
+.sidebar a i,
+.sidebar-logout-btn i{
+    margin-right:8px;
+}
+
+.sidebar-logout-btn:hover{
+    background:#343a40;
+}
+
+.sidebar-badge {
+    float: right;
+    font-size: 11px;
+    padding: 3px 7px;
+    border-radius: 10px;
+    margin-top: 2px;
+}
+
+.notification-unread {
+    background: #f0f4ff;
+    border-left: 4px solid #667eea;
+}
+
+.sidebar-profile-avatar {
+    width: 32px;
+    height: 32px;
+    border-radius: 50%;
+    object-fit: cover;
+    border: 1px solid rgba(255, 255, 255, 0.3);
+}
+
+.sidebar-profile-avatar-placeholder {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    color: #fff;
+    background: #495057;
+}
+
+/* .profile-thumb-preview {
+    width: 140px;
+    height: 140px;
+    border-radius: 50%;
+    object-fit: cover;
+    border: 3px solid #dee2e6;
+} */
+
+.profile-thumb-placeholder {
+    margin: 0 auto;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    background: #e9ecef;
+    color: #6c757d;
+    font-size: 2rem;
+}
+
+/* Center Card */
+.card {
+    border: none;
+    border-radius: 15px;
+    overflow: hidden;
+}
+
+/* Card Shadow */
+.shadow {
+    box-shadow: 0 15px 35px rgba(0, 0, 0, 0.15) !important;
+}
+
+/* Card Body */
+.card-body {
+    padding: 2rem;
+}
+
+/* Heading */
+h3 {
+    color: #333;
+    font-weight: 700;
+}
+
+/* Labels */
+.form-label {
+    font-weight: 600;
+    color: #555;
+}
+
+/* Input Fields */
+.form-control {
+    height: 48px;
+    border-radius: 10px;
+    border: 1px solid #ddd;
+    padding-left: 15px;
+    transition: all 0.3s ease;
+}
+
+/* Input Focus */
+.form-control:focus {
+    border-color: #667eea;
+    box-shadow: 0 0 8px rgba(102, 126, 234, 0.3);
+}
+
+/* Login Button */
+.btn-primary {
+    height: 48px;
+    border-radius: 10px;
+    background: #667eea;
+    border: none;
+    font-weight: 600;
+    transition: all 0.3s ease;
+}
+
+.btn-primary:hover {
+    background: #5563d6;
+    transform: translateY(-2px);
+}
+
+/* Forgot Password Link */
+a.small {
+    color: #667eea;
+    text-decoration: none;
+    font-weight: 500;
+}
+
+a.small:hover {
+    text-decoration: underline;
+}
+
+/* Alert Messages */
+.alert {
+    border-radius: 10px;
+    font-size: 14px;
+}
+
+/* Mobile Responsive */
+@media (max-width: 768px) {
+    .col-md-4 {
+        width: 95%;
+    }
+}
